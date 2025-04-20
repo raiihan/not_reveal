@@ -123,4 +123,16 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
+
+    try:
+        asyncio.run(main())
+    except RuntimeError as e:
+        if "event loop is running" in str(e):
+            # Safe fallback for environments like Render/Replit
+            import nest_asyncio
+            nest_asyncio.apply()
+            asyncio.get_event_loop().create_task(main())
+            asyncio.get_event_loop().run_forever()
+        else:
+            raise
+
