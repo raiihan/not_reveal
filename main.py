@@ -103,8 +103,7 @@ def human_readable_size(size_bytes):
 
 
 # Function to handle file uploads
-# Define the handler to process file uploads
-async def handle_file_upload(update: Update, context: CallbackContext):
+# Define the handler to process file 
     
     # Function to handle file uploads with admin check
 # Function to handle file uploads with admin check
@@ -164,6 +163,7 @@ async def handle_file_upload(update: Update, context: CallbackContext):
     except Exception as e:
         logger.error(f"❌ Error handling file: {e}")
         await update.message.reply_text("⚠️ Oops! We hit a snag while uploading. Please try again❌.")
+
 
 
 # Add the file upload handler to the application
