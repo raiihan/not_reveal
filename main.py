@@ -76,7 +76,7 @@ async def start(update: Update, context: CallbackContext):
                 reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
                 await update.message.reply_text(
                     "👋 Welcome!\n\nThis bot allows you to download files using deep links.\n"
-                    "Ask the admin for a download link."
+                    "Ask the admin for a download link.",
                     reply_markup=reply_markup
                 )
             return
