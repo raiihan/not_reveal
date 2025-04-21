@@ -2,21 +2,28 @@ import os
 import logging
 from fastapi import FastAPI, Request
 from telegram import Update
-from telegram.ext import ApplicationBuilder
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-# Logging
+# Logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("bot")
 
-# Get environment variables
+# Load env vars
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-PORT = int(os.environ.get("PORT", 8000))  # Use default 8000 if not found
-
-# Initialize Telegram Application
-telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
+PORT = int(os.environ.get("PORT", 8000))
 
 # FastAPI app
 app = FastAPI()
+
+# Telegram app
+telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+# ✅ Define /start command
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("👋 Hello! Your bot is working!")
+
+# ✅ Add handlers BEFORE initialize
+telegram_app.add_handler(CommandHandler("start", start))
 
 @app.on_event("startup")
 async def startup_event():
@@ -34,7 +41,6 @@ async def telegram_webhook(request: Request):
         logger.error(f"❌ Webhook error: {e}")
     return {"ok": True}
 
-# ✅ This tells Render to bind the app to a port
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=PORT)
