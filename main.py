@@ -52,7 +52,8 @@ async def admin_list(update: Update, context: CallbackContext):
 
 async def start(update: Update, context: CallbackContext):
     try:
-        args = context.args
+        #args = context.args
+        args = update.message.text.split()[1:] if update.message.text and len(update.message.text.split()) > 1 else []
         user_id = update.effective_user.id
 
         # 💬 Custom welcome messages based on admin role
@@ -76,7 +77,6 @@ async def start(update: Update, context: CallbackContext):
                 await update.message.reply_text(
                     "👋 Welcome!\n\nThis bot allows you to download files using deep links.\n"
                     "Ask the admin for a download link.\n\nExample:\n"
-                    f"https://t.me/{context.bot.username}?start=123",
                     reply_markup=reply_markup
                 )
             return
@@ -236,6 +236,8 @@ telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | f
 async def startup():
     logger.info("✅ Telegram bot initialized")
     await telegram_app.initialize()  # Properly await initialization
+    await telegram_app.start()
+     logger.info("✅ Telegram bot started")
 
 # Webhook endpoint for Telegram
 @app.post("/webhook")
