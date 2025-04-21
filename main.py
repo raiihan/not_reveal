@@ -237,7 +237,7 @@ async def startup():
     logger.info("✅ Telegram bot initialized")
     await telegram_app.initialize()  # Properly await initialization
     await telegram_app.start()
-     logger.info("✅ Telegram bot started")
+    logger.info("✅ Telegram bot started")
 
 # Webhook endpoint for Telegram
 @app.post("/webhook")
