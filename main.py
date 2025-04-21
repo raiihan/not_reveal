@@ -12,6 +12,7 @@ from telegram.ext import (
 import logging
 import os
 import math
+from telegram import ReplyKeyboardMarkup
 from telegram import Update
 
 app = FastAPI()
@@ -57,18 +58,29 @@ async def start(update: Update, context: CallbackContext):
         # 💬 Custom welcome messages based on admin role
         if not args:
             if is_admin(user_id):
+                keyboard = [
+                    ["📤 Generate Link", "📂 Batch Upload"],
+                    ["🗑️ Delete File", "📊 Bot Stats"],
+                    ["📢 Broadcast", "🙍 User Info"]
+                ]
+                reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
                 await update.message.reply_text(
                     "👋 Welcome, Admin!\n\nUse the menu to upload files and manage the bot.\n\nCommands:\n"
-                    "- /adminlist\n- Upload any file to generate a deep link\n\nExample Link:\n"
-                    f"https://t.me/{context.bot.username}?start=123"
+                    "- /adminlist\n- Upload any file to generate a deep link\n\nExample:\n"
+                    f"https://t.me/{context.bot.username}?start=123",
+                    reply_markup=reply_markup
                 )
             else:
+                keyboard = [["📥 Download File"]]
+                reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
                 await update.message.reply_text(
                     "👋 Welcome!\n\nThis bot allows you to download files using deep links.\n"
                     "Ask the admin for a download link.\n\nExample:\n"
-                    f"https://t.me/{context.bot.username}?start=123"
+                    f"https://t.me/{context.bot.username}?start=123",
+                    reply_markup=reply_markup
                 )
             return
+
 
         # 🧩 If /start has a deep link argument — fetch file
         msg_id = int(args[0])
@@ -101,6 +113,46 @@ def human_readable_size(size_bytes):
     return f"{round(size_bytes / p, 2)} {size_name[i]}"
 
 
+# menu list is here
+
+async def generate_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🛠 Generate Link feature is under construction.")
+
+async def batch_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🛠 Batch Upload feature is under construction.")
+
+async def delete_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🗑️ Send the file link or ID to delete.")
+
+async def bot_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("📊 Bot Stats feature coming soon.")
+
+async def broadcast_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("📢 Broadcast feature coming soon.")
+
+async def user_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🙍 User Info will be available soon.")
+ 
+
+# menu handler
+
+async def handle_menu_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    if text == "📤 Generate Link":
+        await generate_link(update, context)
+    elif text == "📂 Batch Upload":
+        await batch_upload(update, context)
+    elif text == "🗑️ Delete File":
+        await delete_file(update, context)
+    elif text == "📊 Bot Stats":
+        await bot_stats(update, context)
+    elif text == "📢 Broadcast":
+        await broadcast_message(update, context)
+    elif text == "🙍 User Info":
+        await user_info(update, context)
+
+# Add this to handler section
+application.add_handler(MessageHandler(filters.TEXT, handle_menu_click))
 
 # Function to handle file uploads
 # Define the handler to process file 
@@ -167,8 +219,15 @@ async def handle_file_upload(update: Update, context: CallbackContext):
 
 
 # Add the file upload handler to the application
+application.add_handler(CommandHandler("start", start))
+application.add_handler(CommandHandler("generatelink", generate_link))
+application.add_handler(CommandHandler("batchupload", batch_upload))
+application.add_handler(CommandHandler("deletefile", delete_file))
+application.add_handler(CommandHandler("stats", bot_stats))
+application.add_handler(CommandHandler("broadcast", broadcast_message))
+application.add_handler(CommandHandler("userinfo", user_info))
+
 telegram_app.add_handler(CommandHandler("adminlist", admin_list))
-telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | filters.VIDEO, handle_file_upload))
 
 
