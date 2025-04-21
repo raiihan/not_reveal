@@ -152,7 +152,8 @@ async def handle_menu_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await user_info(update, context)
 
 # Add this to handler section
-application.add_handler(MessageHandler(filters.TEXT, handle_menu_click))
+telegram_app.add_handler(MessageHandler(filters.TEXT, handle_menu_click))
+
 
 # Function to handle file uploads
 # Define the handler to process file 
