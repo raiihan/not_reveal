@@ -1,6 +1,12 @@
 from fastapi import FastAPI, Request
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CallbackContext
+from telegram.ext import (
+    ApplicationBuilder,
+    CallbackContext,
+    MessageHandler,
+    filters
+)
+
 import logging
 import os
 from telegram import Update
