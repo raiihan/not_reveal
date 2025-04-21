@@ -5,7 +5,8 @@ from telegram.ext import (
     CallbackContext,
     MessageHandler,
     filters,
-    CommandHandler
+    CommandHandler,
+    ContextTypes
 )
 
 import logging
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OWNER_ID = int(os.getenv("OWNER_ID"))
 CHANNEL_ID = os.getenv("CHANNEL_ID")
+ADMINS = [OWNER_ID, 5621290261, 5765156518]  # Replace with your actual admin Telegram IDs
 
 # Set up the Telegram application with your token
 telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -33,29 +35,61 @@ telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 def is_admin(user_id):
     return user_id == OWNER_ID
 
+ADMINS = [OWNER_ID, 123456789, 987654321]  # Replace with your actual admin Telegram IDs
+
+def is_admin(user_id):
+    return user_id in ADMINS
+
+async def admin_list(update: Update, context: CallbackContext):
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
+        return
+    admin_list_text = "\n".join([f"👤 `{admin}`" for admin in ADMINS])
+    await update.message.reply_text(f"🔐 Current Admins:\n{admin_list_text}", parse_mode="Markdown")
+
+
 
 async def start(update: Update, context: CallbackContext):
     try:
         args = context.args
-        if not args:
-            await update.message.reply_text("👋 Welcome! Send me a file if you're an admin.")
-            return
-
-        msg_id = int(args[0])
         user_id = update.effective_user.id
 
-        # Try to copy the message from the channel to the user
+        # 💬 Custom welcome messages based on admin role
+        if not args:
+            if is_admin(user_id):
+                await update.message.reply_text(
+                    "👋 Welcome, Admin!\n\nUse the menu to upload files and manage the bot.\n\nCommands:\n"
+                    "- /adminlist\n- Upload any file to generate a deep link\n\nExample Link:\n"
+                    f"https://t.me/{context.bot.username}?start=123"
+                )
+            else:
+                await update.message.reply_text(
+                    "👋 Welcome!\n\nThis bot allows you to download files using deep links.\n"
+                    "Ask the admin for a download link.\n\nExample:\n"
+                    f"https://t.me/{context.bot.username}?start=123"
+                )
+            return
+
+        # 🧩 If /start has a deep link argument — fetch file
+        msg_id = int(args[0])
+
+        # ⏳ Send a fancy loading message
+        loader = await update.message.reply_text("🔍 Retrieving your file... Please wait.")
+
+        # 📤 Copy file from private channel to user
         sent = await context.bot.copy_message(
             chat_id=user_id,
             from_chat_id=CHANNEL_ID,
             message_id=msg_id
         )
 
-        await update.message.reply_text("✅ Here's your file!", reply_to_message_id=sent.message_id)
+        # 🧹 Delete loader
+        await loader.delete()
+
 
     except Exception as e:
         logger.error(f"❌ Error in /start handler: {e}")
-        await update.message.reply_text("⚠️ Sorry, this link is broken or the file was removed.")
+        await update.message.reply_text("❌ File not found or removed. The link may be broken. Please check again!")
 
 # Helper to format bytes to human-readable size
 def human_readable_size(size_bytes):
@@ -71,7 +105,15 @@ def human_readable_size(size_bytes):
 # Function to handle file uploads
 # Define the handler to process file uploads
 async def handle_file_upload(update: Update, context: CallbackContext):
+    
+    # Function to handle file uploads with admin check
+# Function to handle file uploads with admin check
+async def handle_file_upload(update: Update, context: CallbackContext):
     try:
+        user_id = update.effective_user.id
+        if not is_admin(user_id):
+            await update.message.reply_text("🚫 Only admins can upload files.")
+            return
         message = update.message
         bot = context.bot
 
@@ -121,10 +163,11 @@ async def handle_file_upload(update: Update, context: CallbackContext):
 
     except Exception as e:
         logger.error(f"❌ Error handling file: {e}")
-        await update.message.reply_text("❌ Something went wrong while processing the file.")
+        await update.message.reply_text("⚠️ Oops! We hit a snag while uploading. Please try again❌.")
 
 
 # Add the file upload handler to the application
+telegram_app.add_handler(CommandHandler("adminlist", admin_list))
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | filters.VIDEO, handle_file_upload))
 
