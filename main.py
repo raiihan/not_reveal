@@ -87,7 +87,7 @@ async def start(update: Update, context: CallbackContext):
         # 🧩 If /start has a deep link argument — fetch file
         try:
             msg_id = int(args[0])
-            except (IndexError, ValueError):
+        except (IndexError, ValueError):
             await update.message.reply_text("⚠️ Invalid or broken link. Please ask the admin for a valid one.")
             return
 
