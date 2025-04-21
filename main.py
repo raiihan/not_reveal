@@ -220,13 +220,13 @@ async def handle_file_upload(update: Update, context: CallbackContext):
 
 
 # Add the file upload handler to the application
-application.add_handler(CommandHandler("start", start))
-application.add_handler(CommandHandler("generatelink", generate_link))
-application.add_handler(CommandHandler("batchupload", batch_upload))
-application.add_handler(CommandHandler("deletefile", delete_file))
-application.add_handler(CommandHandler("stats", bot_stats))
-application.add_handler(CommandHandler("broadcast", broadcast_message))
-application.add_handler(CommandHandler("userinfo", user_info))
+telegram_app.add_handler(CommandHandler("start", start))
+telegram_app.add_handler(CommandHandler("generatelink", generate_link))
+telegram_app.add_handler(CommandHandler("batchupload", batch_upload))
+telegram_app.add_handler(CommandHandler("deletefile", delete_file))
+telegram_app.add_handler(CommandHandler("stats", bot_stats))
+telegram_app.add_handler(CommandHandler("broadcast", broadcast_message))
+telegram_app.add_handler(CommandHandler("userinfo", user_info))
 
 telegram_app.add_handler(CommandHandler("adminlist", admin_list))
 telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | filters.VIDEO, handle_file_upload))
