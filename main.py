@@ -53,8 +53,7 @@ telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | f
 @app.on_event("startup")
 async def startup():
     logger.info("✅ Telegram bot initialized")
-    # Ensure that the bot is correctly initialized before processing updates
-    telegram_app.initialize()  # Initialize the bot application properly
+    await telegram_app.initialize()  # Properly await initialization
 
 # Webhook endpoint for Telegram
 @app.post("/webhook")
