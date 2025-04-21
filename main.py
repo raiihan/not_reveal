@@ -1,9 +1,12 @@
 import os
 import logging
 from fastapi import FastAPI, Request
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes
 
+# Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("bot")
 
@@ -11,13 +14,10 @@ logger = logging.getLogger("bot")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OWNER_ID = int(os.getenv("OWNER_ID"))
 
-# Create FastAPI app
-app = FastAPI()
-
 # Init telegram app
 telegram_app = Application.builder().token(BOT_TOKEN).build()
 
-# Start command handler
+# Telegram handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id == OWNER_ID:
@@ -36,7 +36,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 telegram_app.add_handler(CommandHandler("start", start))
 
-# Webhook endpoint
+# New FastAPI lifespan
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await telegram_app.initialize()
+    logger.info("✅ Telegram application initialized")
+    yield
+    await telegram_app.shutdown()
+
+# Create FastAPI app with lifespan
+app = FastAPI(lifespan=lifespan)
+
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
     try:
@@ -46,9 +56,3 @@ async def telegram_webhook(request: Request):
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}")
     return {"ok": True}
-
-# Startup hook for Render
-@app.on_event("startup")
-async def on_startup():
-    await telegram_app.initialize()
-    logger.info("✅ Telegram application initialized")
