@@ -1,51 +1,28 @@
 import os
 import logging
 from fastapi import FastAPI, Request
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram import Update
+from telegram.ext import ApplicationBuilder
 
 # Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("bot")
 
-# ENV
+# Get environment variables
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-OWNER_ID = int(os.getenv("OWNER_ID"))
+PORT = int(os.environ.get("PORT", 8000))  # Use default 8000 if not found
 
-# Init telegram app
-telegram_app = Application.builder().token(BOT_TOKEN).build()
+# Initialize Telegram Application
+telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-# Telegram handlers
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if user_id == OWNER_ID:
-        buttons = [
-            [InlineKeyboardButton("👤 Add Admin", callback_data="add_admin"),
-             InlineKeyboardButton("❌ Remove Admin", callback_data="remove_admin")],
-            [InlineKeyboardButton("📜 Admin List", callback_data="list_admins")],
-            [InlineKeyboardButton("📂 Batch Upload", callback_data="batch_upload")],
-            [InlineKeyboardButton("📈 Bot Stats", callback_data="bot_stats")],
-            [InlineKeyboardButton("📢 Broadcast", callback_data="broadcast")],
-        ]
-    else:
-        buttons = []
-    reply_markup = InlineKeyboardMarkup(buttons) if buttons else None
-    await update.message.reply_text("👋 Welcome to NotRevealBot!", reply_markup=reply_markup)
+# FastAPI app
+app = FastAPI()
 
-telegram_app.add_handler(CommandHandler("start", start))
-
-# New FastAPI lifespan
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+@app.on_event("startup")
+async def startup_event():
+    logger.info("🚀 Bot starting...")
     await telegram_app.initialize()
-    logger.info("✅ Telegram application initialized")
-    yield
-    await telegram_app.shutdown()
-
-# Create FastAPI app with lifespan
-app = FastAPI(lifespan=lifespan)
+    logger.info("✅ Telegram bot initialized")
 
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
@@ -56,3 +33,8 @@ async def telegram_webhook(request: Request):
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}")
     return {"ok": True}
+
+# ✅ This tells Render to bind the app to a port
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=PORT)
