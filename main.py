@@ -7,6 +7,9 @@ from telegram import Update
 
 app = FastAPI()
 
+# Initialize Telegram Application (Corrected)
+telegram_app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()  # Initialize Application
+
 # Set up logging
 logger = logging.getLogger(__name__)
 
@@ -23,39 +26,38 @@ def is_admin(user_id):
     return user_id == OWNER_ID
 
 # Function to handle file uploads
-async def handle_file_upload(update: Update, context: CallbackContext):
-    if is_admin(update.effective_user.id):
-        file = update.message.document
+# Define the handler to process file uploads
+async def handle_file_upload(update: Update, context):
+    try:
+        file = update.message.document or update.message.photo  # You can extend this to other file types
         if file:
             file_id = file.file_id
-            file_name = file.file_name
-            file_size = file.file_size
-
-            # Upload the file to the private channel
-            await context.bot.send_document(chat_id=CHANNEL_ID, document=file_id)
-
-            # Send the deep link message
-            deep_link = f"https://t.me/{context.bot.username}?start={file_id}"
-            await update.message.reply_text(
-                f"✅ File uploaded!\nName: {file_name}\nSize: {file_size} bytes\n\n"
-                f"Click the link to get your file: {deep_link}"
-            )
+            # You can download or process the file as needed here
+            logger.info(f"File received with ID: {file_id}")
+            await update.message.reply_text("✅ File received!")
         else:
-            await update.message.reply_text("❌ No file received.")
-    else:
-        await update.message.reply_text("❌ You are not authorized to upload files.")
+            logger.info("No file found in the message.")
+    except Exception as e:
+        logger.error(f"❌ Error handling file upload: {e}")
+
+# Add the file upload handler to the application
+telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.Photo.ALL, handle_file_upload))
+
+@app.on_event("startup")
+async def startup():
+    logger.info("✅ Telegram bot initialized")
+    # Ensure that the bot is correctly initialized before processing updates
+    telegram_app.initialize()  # Initialize the bot application properly
 
 # Webhook endpoint for Telegram
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
     try:
-        # Parse the incoming JSON data from Telegram
-        data = await request.json()
-        update = Update.de_json(data, telegram_app.bot)
-
-        # Call the file upload handler
-        await handle_file_upload(update, telegram_app)
-        await telegram_app.process_update(update)
+        data = await request.json()  # Get incoming data from Telegram
+        update = Update.de_json(data, telegram_app.bot)  # Convert to Update object
+        
+        # Process the update with the properly initialized application
+        await telegram_app.process_update(update)  # This will now also process file uploads
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}")
     return {"ok": True}
