@@ -56,6 +56,8 @@ async def start(update: Update, context: CallbackContext):
         args = update.message.text.split()[1:] if update.message.text and len(update.message.text.split()) > 1 else []
         user_id = update.effective_user.id
 
+        
+
         # 💬 Custom welcome messages based on admin role
         if not args:
             if is_admin(user_id):
@@ -83,7 +85,12 @@ async def start(update: Update, context: CallbackContext):
 
 
         # 🧩 If /start has a deep link argument — fetch file
-        msg_id = int(args[0])
+        try:
+            msg_id = int(args[0])
+            except (IndexError, ValueError):
+            await update.message.reply_text("⚠️ Invalid or broken link. Please ask the admin for a valid one.")
+            return
+
 
         # ⏳ Send a fancy loading message
         loader = await update.message.reply_text("🔍 Retrieving your file... Please wait.")
@@ -151,8 +158,7 @@ async def handle_menu_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif text == "🙍 User Info":
         await user_info(update, context)
 
-# Add this to handler section
-telegram_app.add_handler(MessageHandler(filters.TEXT, handle_menu_click))
+
 
 
 # Function to handle file uploads
@@ -220,6 +226,7 @@ async def handle_file_upload(update: Update, context: CallbackContext):
 
 
 # Add the file upload handler to the application
+# 🥇 First: Command handlers
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CommandHandler("generatelink", generate_link))
 telegram_app.add_handler(CommandHandler("batchupload", batch_upload))
@@ -227,9 +234,14 @@ telegram_app.add_handler(CommandHandler("deletefile", delete_file))
 telegram_app.add_handler(CommandHandler("stats", bot_stats))
 telegram_app.add_handler(CommandHandler("broadcast", broadcast_message))
 telegram_app.add_handler(CommandHandler("userinfo", user_info))
-
 telegram_app.add_handler(CommandHandler("adminlist", admin_list))
+
+# 🥈 Second: File upload handler
 telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | filters.VIDEO, handle_file_upload))
+
+# 🥉 Last: Menu text button handler
+telegram_app.add_handler(MessageHandler(filters.TEXT, handle_menu_click))
+
 
 
 @app.on_event("startup")
