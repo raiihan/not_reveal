@@ -5,7 +5,7 @@ from telegram.ext import (
     CallbackContext,
     MessageHandler,
     filters,
-CommandHandler
+    CommandHandler
 )
 
 import logging
@@ -34,8 +34,28 @@ def is_admin(user_id):
     return user_id == OWNER_ID
 
 
-async def start_command(update: Update, context: CallbackContext):
-    await update.message.reply_text("👋 Hello! I'm ready to receive your files.")
+async def start(update: Update, context: CallbackContext):
+    try:
+        args = context.args
+        if not args:
+            await update.message.reply_text("👋 Welcome! Send me a file if you're an admin.")
+            return
+
+        msg_id = int(args[0])
+        user_id = update.effective_user.id
+
+        # Try to copy the message from the channel to the user
+        sent = await context.bot.copy_message(
+            chat_id=user_id,
+            from_chat_id=CHANNEL_ID,
+            message_id=msg_id
+        )
+
+        await update.message.reply_text("✅ Here's your file!", reply_to_message_id=sent.message_id)
+
+    except Exception as e:
+        logger.error(f"❌ Error in /start handler: {e}")
+        await update.message.reply_text("⚠️ Sorry, this link is broken or the file was removed.")
 
 # Helper to format bytes to human-readable size
 def human_readable_size(size_bytes):
