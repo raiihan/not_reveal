@@ -47,7 +47,8 @@ async def handle_file_upload(update: Update, context):
         logger.error(f"❌ Error handling file upload: {e}")
 
 # Add the file upload handler to the application
-telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.Photo.ALL, handle_file_upload))
+telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | filters.VIDEO))
+
 
 @app.on_event("startup")
 async def startup():
