@@ -1,10 +1,27 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 import os
+from fastapi import FastAPI, Request
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackQueryHandler,
+    ContextTypes,
+)
+import logging
 
+# Enable logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Load env vars
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 OWNER_ID = int(os.getenv("OWNER_ID"))
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 
+# Telegram app
+application = Application.builder().token(BOT_TOKEN).build()
+
+# Start handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id == OWNER_ID:
@@ -21,11 +38,24 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(buttons) if buttons else None
     await update.message.reply_text("👋 Welcome to NotRevealBot!", reply_markup=reply_markup)
 
+# Add handler
+application.add_handler(CommandHandler("start", start))
+
+# FastAPI for Render + Webhook
+app = FastAPI()
+
+@app.post("/webhook")
+async def telegram_webhook(req: Request):
+    try:
+        data = await req.json()
+        update = Update.de_json(data, application.bot)
+        await application.process_update(update)
+        return {"ok": True}
+    except Exception as e:
+        logger.error("❌ Webhook error: %s", e)
+        return {"ok": False, "error": str(e)}
+
+# Only for local dev, not needed on Render
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
-    app.add_handler(CommandHandler("start", start))
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.getenv("PORT", 8443)),
-        webhook_url=os.getenv("WEBHOOK_URL")
-    )
+    import uvicorn
+    uvicorn.run("bot:app", host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
