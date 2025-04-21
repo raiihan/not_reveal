@@ -125,7 +125,7 @@ async def handle_file_upload(update: Update, context: CallbackContext):
 
 
 # Add the file upload handler to the application
-telegram_app.add_handler(CommandHandler("start", start_command))
+telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | filters.VIDEO, handle_file_upload))
 
 
