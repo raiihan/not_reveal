@@ -15,6 +15,12 @@ import math
 from telegram import ReplyKeyboardMarkup
 from telegram import Update
 
+logging.basicConfig(
+    level=logging.ERROR,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+
 app = FastAPI()
 
 # Initialize Telegram Application (Corrected)
@@ -50,61 +56,52 @@ async def admin_list(update: Update, context: CallbackContext):
 
 
 
+def get_admin_keyboard():
+    return ReplyKeyboardMarkup(
+        [["📤 Generate Link", "📂 Batch Upload"],
+         ["🗑️ Delete File", "📊 Bot Stats"],
+         ["📢 Broadcast", "🙍 User Info"]],
+        resize_keyboard=True
+    )
+
+def get_user_keyboard():
+    return ReplyKeyboardMarkup(
+        [["📥 Download File"]],
+        resize_keyboard=True
+    )
+
+
 async def start(update: Update, context: CallbackContext):
     try:
-        #args = context.args
-        args = update.message.text.split()[1:] if update.message.text and len(update.message.text.split()) > 1 else []
         user_id = update.effective_user.id
-
-        
+        args = update.message.text.split()[1:] if update.message and update.message.text else []
 
         # 💬 Custom welcome messages based on admin role
         if not args:
-            if is_admin(user_id):
-                keyboard = [
-                    ["📤 Generate Link", "📂 Batch Upload"],
-                    ["🗑️ Delete File", "📊 Bot Stats"],
-                    ["📢 Broadcast", "🙍 User Info"]
-                ]
-                reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-                await update.message.reply_text(
-                    "👋 Welcome, Admin!\n\nUse the menu to upload files and manage the bot.\n\nCommands:\n"
-                    "- /adminlist\n- Upload any file to generate a deep link\n\nExample:\n"
-                    f"https://t.me/{context.bot.username}?start=123",
-                    reply_markup=reply_markup
-                )
-            else:
-                keyboard = [["📥 Download File"]]
-                reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-                await update.message.reply_text(
-                    "👋 Welcome!\n\nThis bot allows you to download files using deep links.\n"
-                    "Ask the admin for a download link.",
-                    reply_markup=reply_markup
-                )
+            keyboard = get_admin_keyboard() if is_admin(user_id) else get_user_keyboard()
+            welcome_msg = admin_msg if is_admin(user_id) else user_msg
+            await update.message.reply_text(welcome_msg, reply_markup=keyboard)
             return
 
-
-        # 🧩 If /start has a deep link argument — fetch file
+        # 🧩 Handle deep link argument
         try:
             msg_id = int(args[0])
         except (IndexError, ValueError):
             await update.message.reply_text("⚠️ Invalid or broken link. Please ask the admin for a valid one.")
             return
 
-
-        # ⏳ Send a fancy loading message
+        # ⏳ Fancy loading message
         loader = await update.message.reply_text("🔍 Retrieving your file... Please wait.")
 
-        # 📤 Copy file from private channel to user
+        # 📤 Forward the file from the private channel
         sent = await context.bot.copy_message(
             chat_id=user_id,
             from_chat_id=CHANNEL_ID,
             message_id=msg_id
         )
 
-        # 🧹 Delete loader
+        # 🧹 Remove loader
         await loader.delete()
-
 
     except Exception as e:
         logger.error(f"❌ Error in /start handler: {e}")
@@ -247,9 +244,11 @@ telegram_app.add_handler(MessageHandler(filters.TEXT, handle_menu_click))
 @app.on_event("startup")
 async def startup():
     logger.info("✅ Telegram bot initialized")
-    await telegram_app.initialize()  # Properly await initialization
+    await telegram_app.initialize()
     await telegram_app.start()
-    logger.info("✅ Telegram bot started")
+    await telegram_app.bot.set_webhook("https://not-reveal.onrender.com/webhook")
+    logger.info("🌐 Webhook set successfully")
+
 
 # Webhook endpoint for Telegram
 @app.post("/webhook")
