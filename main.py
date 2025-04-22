@@ -12,6 +12,7 @@ from telegram.ext import (
 import logging
 import os
 import math
+from keyboard_utils import get_user_keyboard, get_admin_keyboard
 from telegram import ReplyKeyboardMarkup
 from telegram import Update
 
@@ -38,9 +39,10 @@ ADMINS = [OWNER_ID, 5621290261, 5765156518]  # Replace with your actual admin Te
 # Set up the Telegram application with your token
 telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-# Admin check function
-def is_admin(user_id):
-    return user_id == OWNER_ID
+admin_msg = "👋 Welcome, Admin! Use the buttons below to manage files and users."
+user_msg = "👋 Welcome! You can download files via shared links. Please click one to begin."
+
+
 
 ADMINS = [OWNER_ID, 123456789, 987654321]  # Replace with your actual admin Telegram IDs
 
@@ -54,21 +56,6 @@ async def admin_list(update: Update, context: CallbackContext):
     admin_list_text = "\n".join([f"👤 `{admin}`" for admin in ADMINS])
     await update.message.reply_text(f"🔐 Current Admins:\n{admin_list_text}", parse_mode="Markdown")
 
-
-
-def get_admin_keyboard():
-    return ReplyKeyboardMarkup(
-        [["📤 Generate Link", "📂 Batch Upload"],
-         ["🗑️ Delete File", "📊 Bot Stats"],
-         ["📢 Broadcast", "🙍 User Info"]],
-        resize_keyboard=True
-    )
-
-def get_user_keyboard():
-    return ReplyKeyboardMarkup(
-        [["📥 Download File"]],
-        resize_keyboard=True
-    )
 
 
 async def start(update: Update, context: CallbackContext):
