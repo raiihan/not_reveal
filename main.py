@@ -252,19 +252,20 @@ async def handle_file_upload(update: Update, context: CallbackContext):
     try:
         user_id = update.effective_user.id
         if not is_admin(user_id):
-            await update.message.reply_text("🚫 Only admins can upload files.")
+            await update.message.reply_text(
+                "🚫 Sorry, only bot admins can upload files.\n"
+                "✨ This feature is for secure content delivery only."
+            )
             return
+
         message = update.message
         bot = context.bot
-
         file = message.document or message.video or (message.photo[-1] if message.photo else None)
 
-        # Default values
         file_name = "Unknown"
         file_size = "Unknown"
         file_type = "Unknown"
 
-        # Detect file type and extract info
         if message.document:
             file_name = message.document.file_name
             file_size = human_readable_size(message.document.file_size)
@@ -278,33 +279,31 @@ async def handle_file_upload(update: Update, context: CallbackContext):
             file_size = human_readable_size(message.photo[-1].file_size)
             file_type = "Photo"
 
-        # ✅ Forward the file to private channel
-        sent = await bot.forward_message(
+        # ✅ Upload to channel using copy_message to keep it clean
+        sent = await bot.copy_message(
             chat_id=CHANNEL_ID,
             from_chat_id=message.chat_id,
             message_id=message.message_id
         )
 
-        # ✅ Create deep link using forwarded message ID
+        # ✅ Deep link with file ID
         deep_link = f"https://t.me/{bot.username}?start={sent.message_id}"
 
-        # ✅ Send formatted response to user
-        response_text = f"""✅ File Uploaded!
+        # ✅ Styled Response
+        text = f"""
+✅ **File Uploaded Successfully!**
 
-📁 Name: `{file_name}`
-📦 Size: `{file_size}`
-📂 Type: `{file_type}`
+📁 **Name:** `{file_name}`
+📦 **Size:** `{file_size}`
+📂 **Type:** `{file_type}`
 
-🔗 Access anytime:
-{deep_link}
+🔗 [Access this file anytime]({deep_link})
 """
-
-        await message.reply_text(response_text, parse_mode="Markdown")
+        await message.reply_text(text, parse_mode="Markdown", disable_web_page_preview=True)
 
     except Exception as e:
-        logger.error(f"❌ Error handling file: {e}")
-        await update.message.reply_text("⚠️ Oops! We hit a snag while uploading. Please try again❌.")
-
+        logger.error(f"❌ Error uploading file: {e}")
+        await update.message.reply_text("⚠️ Oops! Something went wrong while uploading the file.")
 
 
 # Add the file upload handler to the application
