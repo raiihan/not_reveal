@@ -92,25 +92,42 @@ async def start(update: Update, context: CallbackContext):
         if not args:
             keyboard = get_admin_keyboard() if is_admin(user_id) else get_user_keyboard()
             welcome_msg = admin_msg if is_admin(user_id) else user_msg
-            await context.bot.send_message(chat_id=user_id, text=welcome_msg, reply_markup=keyboard)
+
+            # ✅ THIS ensures the custom keyboard shows in bottom-left
+            await context.bot.send_message(
+                chat_id=user_id,
+                text=welcome_msg,
+                reply_markup=keyboard
+            )
             return
 
         # 🧩 Handle deep link argument
         try:
             msg_id = int(args[0])
         except (IndexError, ValueError):
-            await context.bot.send_message(chat_id=user_id, text="⚠️ Invalid or broken link. Please ask the admin for a valid one.")
+            await context.bot.send_message(
+                chat_id=user_id,
+                text="⚠️ Invalid or broken link. Please ask the admin for a valid one.",
+                reply_markup=get_admin_keyboard() if is_admin(user_id) else get_user_keyboard()  # Optional: Show keyboard here too
+            )
             return
 
         # ⏳ Fancy loading message
-        loading_msg = await context.bot.send_message(chat_id=user_id, text="🔍 Retrieving your file... Please wait.")
+        loading_msg = await context.bot.send_message(
+            chat_id=user_id,
+            text="🔍 Retrieving your file... Please wait."
+        )
 
         # 📤 Call helper function to handle file delivery and info
         await send_file_to_user(context, user_id, msg_id, "Unknown", "Unknown", "Unknown", loading_msg)
 
     except Exception as e:
         logger.error(f"❌ Error in /start handler: {e}")
-        await context.bot.send_message(chat_id=user_id, text="❌ File not found or removed. The link may be broken. Please check again!")
+        await context.bot.send_message(
+            chat_id=user_id,
+            text="❌ File not found or removed. The link may be broken. Please check again!",
+            reply_markup=get_admin_keyboard() if is_admin(user_id) else get_user_keyboard()
+        )
 
 
 
