@@ -13,7 +13,7 @@ import logging
 import os
 import asyncio
 import math
-from keyboard_utils import get_user_keyboard, get_admin_keyboard
+from keyboard_utils import get_user_keyboard, get_admin_keyboard, set_bot_commands
 from telegram import ReplyKeyboardMarkup
 from telegram import Update
 from telegram.constants import ParseMode
@@ -320,6 +320,7 @@ telegram_app.add_handler(MessageHandler(filters.TEXT, handle_menu_click))
 @app.on_event("startup")
 async def startup():
     logger.info("✅ Telegram bot initialized")
+    await set_bot_commands(telegram_app)
     await telegram_app.initialize()
     await telegram_app.start()
     await telegram_app.bot.set_webhook("https://not-reveal.onrender.com/webhook")
