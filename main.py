@@ -298,7 +298,8 @@ async def handle_file_upload(update: Update, context: CallbackContext):
 📂 **Type:** `{file_type}`
 
 🔗 [Access this file anytime]({deep_link})
-deep_link
+🔗 [{deep_link}]({deep_link})
+
 """
         await message.reply_text(text, parse_mode="Markdown", disable_web_page_preview=True)
 
