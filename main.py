@@ -39,8 +39,24 @@ ADMINS = [OWNER_ID, 5621290261, 5765156518]  # Replace with your actual admin Te
 # Set up the Telegram application with your token
 telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-admin_msg = "👋 Welcome, Admin! Use the buttons below to manage files and users."
-user_msg = "👋 Welcome! You can download files via shared links. Please click one to begin."
+admin_msg = (
+    "👑 *Hello Admin!*\n\n"
+    "Welcome to the NotRevealBot control panel.\n\n"
+    "🔹 Use the menu to:\n"
+    "• 📤 Upload files\n"
+    "• 🔗 Generate deep links\n"
+    "• 📊 View stats\n"
+    "• 👥 Manage admins\n\n"
+    "Let’s manage files in style!"
+)
+
+user_msg = (
+    "👋 *Welcome to Connect Your Univers!*\n\n"
+    "To get a file, just click on a secure button shared by admins like:\n"
+    "`Enjoy your meal"
+    "Enjoy safe download! 🚀"
+)
+
 
 
 
@@ -63,36 +79,81 @@ async def start(update: Update, context: CallbackContext):
         user_id = update.effective_user.id
         args = update.message.text.split()[1:] if update.message and update.message.text else []
 
-        # 💬 Custom welcome messages based on admin role
+        # 🧹 Delete the original /start message for clean chat
+        try:
+            await update.message.delete()
+        except Exception as e:
+            logger.warning(f"Failed to delete start command: {e}")
+
+        # 💬 Send custom keyboard and welcome message
         if not args:
             keyboard = get_admin_keyboard() if is_admin(user_id) else get_user_keyboard()
             welcome_msg = admin_msg if is_admin(user_id) else user_msg
-            await update.message.reply_text(welcome_msg, reply_markup=keyboard)
+            await context.bot.send_message(chat_id=user_id, text=welcome_msg, reply_markup=keyboard)
             return
 
         # 🧩 Handle deep link argument
         try:
             msg_id = int(args[0])
         except (IndexError, ValueError):
-            await update.message.reply_text("⚠️ Invalid or broken link. Please ask the admin for a valid one.")
+            await context.bot.send_message(chat_id=user_id, text="⚠️ Invalid or broken link. Please ask the admin for a valid one.")
             return
 
         # ⏳ Fancy loading message
-        loader = await update.message.reply_text("🔍 Retrieving your file... Please wait.")
+        loader = await context.bot.send_message(chat_id=user_id, text="🔍 Retrieving your file... Please wait.")
 
-        # 📤 Forward the file from the private channel
-        sent = await context.bot.copy_message(
-            chat_id=user_id,
-            from_chat_id=CHANNEL_ID,
-            message_id=msg_id
+        # ✅ Forward the file to user
+      # 📤 Send the file to the user
+sent = await context.bot.copy_message(
+    chat_id=user_id,
+    from_chat_id=CHANNEL_ID,
+    message_id=msg_id
+)
+
+# 🧹 Schedule file message for auto-deletion
+async def delete_sent_message():
+    try:
+        await asyncio.sleep(10)  # ⏳ wait 10 seconds (adjustable)
+        await context.bot.delete_message(chat_id=user_id, message_id=sent.message_id)
+    except Exception as e:
+        logger.warning(f"Failed to auto-delete file: {e}")
+
+asyncio.create_task(delete_sent_message())
+
         )
 
-        # 🧹 Remove loader
+        # ✅ Try to show file info (best effort, based on content type)
+        file_name = "Unknown"
+        file_size = "Unknown"
+        file_type = "File"
+
+        if sent.document:
+            file_name = sent.document.file_name
+            file_size = human_readable_size(sent.document.file_size)
+            file_type = "Document"
+        elif sent.video:
+            file_name = sent.video.file_name or "Unnamed Video"
+            file_size = human_readable_size(sent.video.file_size)
+            file_type = "Video"
+        elif sent.photo:
+            file_name = "Photo.jpg"
+            file_size = human_readable_size(sent.photo[-1].file_size)
+            file_type = "Photo"
+
+        # 💡 Send file info
+        await context.bot.send_message(
+            chat_id=user_id,
+            text=f"📁 *File:* `{file_name}`\n📦 *Size:* `{file_size}`\n📂 *Type:* `{file_type}`",
+            parse_mode="Markdown"
+        )
+
+        # 🧹 Remove the loader message
         await loader.delete()
 
     except Exception as e:
         logger.error(f"❌ Error in /start handler: {e}")
-        await update.message.reply_text("❌ File not found or removed. The link may be broken. Please check again!")
+        await context.bot.send_message(chat_id=user_id, text="❌ File not found or removed. The link may be broken. Please check again!")
+
 
 # Helper to format bytes to human-readable size
 def human_readable_size(size_bytes):
