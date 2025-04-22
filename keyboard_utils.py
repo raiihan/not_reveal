@@ -31,4 +31,4 @@ async def set_bot_commands(application):
         BotCommand("help", "Show help"),
     ]
 
-
+    await application.bot.set_my_commands(commands)
