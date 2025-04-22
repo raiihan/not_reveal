@@ -1,23 +1,17 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 def get_user_keyboard():
-    """Keyboard for regular users (download-only access)."""
     keyboard = [
-        [InlineKeyboardButton("📥 Sample File", url="https://t.me/NotRevealBot?start=1")],
-        [InlineKeyboardButton("ℹ️ How It Works", callback_data="info")]
+        [KeyboardButton("📁 Start")],
     ]
-    return InlineKeyboardMarkup(keyboard)
-
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 def get_admin_keyboard():
-    """Keyboard for bot admins/owner (full control)."""
     keyboard = [
-        [InlineKeyboardButton("🔗 Generate Link", callback_data="generate_link")],
-        [InlineKeyboardButton("📦 Batch Upload", callback_data="batch_upload")],
-        [InlineKeyboardButton("🧑‍💻 Admin List", callback_data="admin_list")],
-        [InlineKeyboardButton("🗑️ Delete File", callback_data="delete_file")],
-        [InlineKeyboardButton("📊 Bot Stats", callback_data="bot_stats")],
-        [InlineKeyboardButton("📢 Broadcast Message", callback_data="broadcast")],
-        [InlineKeyboardButton("👤 User Details", callback_data="user_details")]
+        [KeyboardButton("📁 Start")],
+        [KeyboardButton("🔗 Generate Link"), KeyboardButton("📦 Batch Upload")],
+        [KeyboardButton("👥 Admin List"), KeyboardButton("🗑️ Delete File")],
+        [KeyboardButton("📊 Bot Stats"), KeyboardButton("📣 Broadcast")],
+        [KeyboardButton("👤 User Details")],
     ]
-    return InlineKeyboardMarkup(keyboard)
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
