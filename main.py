@@ -101,39 +101,27 @@ async def start(update: Update, context: CallbackContext):
             return
 
         # ⏳ Fancy loading message
-        loader = await context.bot.send_message(chat_id=user_id, text="🔍 Retrieving your file... Please wait.")
+        loading_msg = await context.bot.send_message(chat_id=user_id, text="🔍 Retrieving your file... Please wait.")
 
-        # ✅ Forward the file to user
-      # 📤 Send the file to the user
-     try:
-        sent = await context.bot.copy_message(
-        chat_id=user_id,
-        from_chat_id=CHANNEL_ID,
-        message_id=msg_id
-    )
-    # Additional code...
-except Exception as e:
-    logger.error(f"Error copying message: {e}")
-    await context.bot.send_message(chat_id=user_id, text="❌ Failed to retrieve the file.")
+        # 📤 Call helper function to handle file delivery and info
+        await send_file_to_user(context, user_id, msg_id, "Unknown", "Unknown", "Unknown", loading_msg)
 
-
-# 🧹 Schedule file message for auto-deletion
-async def delete_sent_message():
-    try:
-        await asyncio.sleep(10)  # ⏳ wait 10 seconds (adjustable)
-        await context.bot.delete_message(chat_id=user_id, message_id=sent.message_id)
     except Exception as e:
-        logger.warning(f"Failed to auto-delete file: {e}")
+        logger.error(f"❌ Error in /start handler: {e}")
+        await context.bot.send_message(chat_id=user_id, text="❌ File not found or removed. The link may be broken. Please check again!")
 
-asyncio.create_task(delete_sent_message())
 
-        
 
-        # ✅ Try to show file info (best effort, based on content type)
-        file_name = "Unknown"
-        file_size = "Unknown"
-        file_type = "File"
+# file delivery and info or send file to user function refactore
+async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file_size, loading_msg):
+    try:
+        sent = await context.bot.copy_message(
+            chat_id=user_id,
+            from_chat_id=CHANNEL_ID,
+            message_id=msg_id
+        )
 
+        # ✅ Try to show file info
         if sent.document:
             file_name = sent.document.file_name
             file_size = human_readable_size(sent.document.file_size)
@@ -147,19 +135,33 @@ asyncio.create_task(delete_sent_message())
             file_size = human_readable_size(sent.photo[-1].file_size)
             file_type = "Photo"
 
-        # 💡 Send file info
+        await context.bot.delete_message(chat_id=user_id, message_id=loading_msg.message_id)
+
         await context.bot.send_message(
             chat_id=user_id,
-            text=f"📁 *File:* `{file_name}`\n📦 *Size:* `{file_size}`\n📂 *Type:* `{file_type}`",
-            parse_mode="Markdown"
+            text=f"📥 <b>{file_name}</b>\n📁 <i>{file_type} - {file_size}</i>",
+            reply_to_message_id=sent.message_id,
+            parse_mode=ParseMode.HTML
         )
 
-        # 🧹 Remove the loader message
-        await loader.delete()
+        # 🧹 Auto-delete after 10 seconds
+        async def delete_sent_message():
+            try:
+                await asyncio.sleep(10)
+                await context.bot.delete_message(chat_id=user_id, message_id=sent.message_id)
+            except Exception as e:
+                logger.warning(f"Failed to auto-delete file: {e}")
+
+        asyncio.create_task(delete_sent_message())
 
     except Exception as e:
-        logger.error(f"❌ Error in /start handler: {e}")
-        await context.bot.send_message(chat_id=user_id, text="❌ File not found or removed. The link may be broken. Please check again!")
+        logger.error(f"Error copying or sending message: {e}")
+        await context.bot.send_message(
+            chat_id=user_id,
+            text="❌ <b>Sorry! I couldn't retrieve the file.</b>",
+            parse_mode=ParseMode.HTML
+        )
+
 
 
 # Helper to format bytes to human-readable size
