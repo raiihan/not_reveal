@@ -115,7 +115,7 @@ async def start(update: Update, context: CallbackContext):
         # ⏳ Fancy loading message
         loading_msg = await context.bot.send_message(
             chat_id=user_id,
-            text="🔍 Retrieving your file... Please wait."
+            text="⏳ Preparing your file 🔍, please wait..."
         )
 
         # 📤 Call helper function to handle file delivery and info
@@ -134,13 +134,14 @@ async def start(update: Update, context: CallbackContext):
 # file delivery and info or send file to user function refactore
 async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file_size, loading_msg):
     try:
+        # Try to send file
         sent = await context.bot.copy_message(
             chat_id=user_id,
             from_chat_id=CHANNEL_ID,
             message_id=msg_id
         )
 
-        # ✅ Try to show file info
+        # Extract file info
         if sent.document:
             file_name = sent.document.file_name
             file_size = human_readable_size(sent.document.file_size)
@@ -154,8 +155,13 @@ async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file
             file_size = human_readable_size(sent.photo[-1].file_size)
             file_type = "Photo"
 
-        await context.bot.delete_message(chat_id=user_id, message_id=loading_msg.message_id)
+        # ✅ Delete the loading message right away
+        try:
+            await context.bot.delete_message(chat_id=loading_msg.chat.id, message_id=loading_msg.message_id)
+        except Exception as e:
+            logger.warning(f"❌ Failed to delete loading message: {e}")
 
+        # Send file info
         await context.bot.send_message(
             chat_id=user_id,
             text=f"📥 <b>{file_name}</b>\n📁 <i>{file_type} - {file_size}</i>",
@@ -163,18 +169,26 @@ async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file
             parse_mode=ParseMode.HTML
         )
 
-        # 🧹 Auto-delete after 10 seconds
+        # ✅ Optional: Delete the sent file after delay (Not the loader again!)
         async def delete_sent_message():
             try:
                 await asyncio.sleep(10)
                 await context.bot.delete_message(chat_id=user_id, message_id=sent.message_id)
             except Exception as e:
-                logger.warning(f"Failed to auto-delete file: {e}")
+                logger.warning(f"❌ Failed to auto-delete sent file: {e}")
 
         asyncio.create_task(delete_sent_message())
 
     except Exception as e:
-        logger.error(f"Error copying or sending message: {e}")
+        logger.error(f"❌ Error copying or sending message: {e}")
+
+        # ❌ Clean up loader if error
+        try:
+            await context.bot.delete_message(chat_id=loading_msg.chat.id, message_id=loading_msg.message_id)
+        except Exception as e:
+            logger.warning(f"❌ Failed to delete loader after error: {e}")
+
+        # Show error message
         await context.bot.send_message(
             chat_id=user_id,
             text="❌ <b>Sorry! I couldn't retrieve the file.</b>",
