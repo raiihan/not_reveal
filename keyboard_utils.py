@@ -1,4 +1,4 @@
-from telegram import ReplyKeyboardMarkup, KeyboardButton
+from telegram import ReplyKeyboardMarkup, KeyboardButton, BotCommand
 
 def get_user_keyboard():
     keyboard = [
@@ -15,3 +15,20 @@ def get_admin_keyboard():
         [KeyboardButton("👤 User Details")],
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+
+
+
+async def set_bot_commands(application):
+    commands = [
+        BotCommand("start", "Start bot"),
+        BotCommand("genlink", "Generate deep link"),
+        BotCommand("batch", "Batch upload files"),
+        BotCommand("delete", "Delete file"),
+        BotCommand("broadcast", "Send message to all users"),
+        BotCommand("user", "Show user details"),
+        BotCommand("stats", "Show bot stats"),
+        BotCommand("help", "Show help"),
+    ]
+
+
