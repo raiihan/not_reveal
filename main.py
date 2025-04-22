@@ -105,11 +105,17 @@ async def start(update: Update, context: CallbackContext):
 
         # ✅ Forward the file to user
       # 📤 Send the file to the user
-sent = await context.bot.copy_message(
-    chat_id=user_id,
-    from_chat_id=CHANNEL_ID,
-    message_id=msg_id
-)
+     try:
+        sent = await context.bot.copy_message(
+        chat_id=user_id,
+        from_chat_id=CHANNEL_ID,
+        message_id=msg_id
+    )
+    # Additional code...
+except Exception as e:
+    logger.error(f"Error copying message: {e}")
+    await context.bot.send_message(chat_id=user_id, text="❌ Failed to retrieve the file.")
+
 
 # 🧹 Schedule file message for auto-deletion
 async def delete_sent_message():
