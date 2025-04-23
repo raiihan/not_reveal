@@ -1,6 +1,7 @@
-from telegram import BotCommand, BotCommandScopeDefault, BotCommandScopeAllPrivateChats, BotCommandScopeChat
+from telegram import BotCommand, BotCommandScopeDefault, BotCommandScopeChat
+from telegram.error import BadRequest
 
-ADMINS = [1615680044, 5621290261, 5765156518] 
+ADMINS = [1615680044, 5621290261, 5765156518]
 
 async def set_bot_commands(application):
     # Commands for all users
@@ -21,5 +22,10 @@ async def set_bot_commands(application):
         BotCommand("user", "👤 User info"),
         BotCommand("broadcast", "📣 Broadcast"),
     ]
+
+    # Safe way to set commands per admin
     for admin_id in ADMINS:
-        await application.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=admin_id))
+        try:
+            await application.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=admin_id))
+        except BadRequest as e:
+            print(f"❗ Skipping admin {admin_id}: {e}")
