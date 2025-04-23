@@ -19,7 +19,7 @@ from telegram import ReplyKeyboardMarkup
 from telegram import Update
 from telegram.constants import ParseMode
 from handlers.admin import help_command, generate_link,  edit_file_description,  batch_upload_files, delete_file, list_admins, get_upload_stats, show_user_details, broadcast_message
-
+from utils.stats import add_user, add_file
 from handlers.batch_upload import  get_batch_upload_handler
 
 logging.basicConfig(
@@ -57,10 +57,11 @@ admin_msg = (
 )
 
 user_msg = (
-    "👋 *Welcome to Connect Your Univers!*\n\n"
+    "👋 *Welcome to the DownloadGhor!*\n\n"
     "To get a file, just click on a secure button shared by admins like:\n"
     "`Enjoy your meal"
-    "Enjoy safe download! 🚀"
+    "Safe download! 🚀"
+    "Please join our universal channel @shadowStreamer."
 )
 
 
@@ -71,6 +72,8 @@ def is_admin(user_id):
 async def start(update: Update, context: CallbackContext):
     try:
         user_id = update.effective_user.id
+        add_user(user_id)
+        await update.message.reply_text(user_msg)
         args = update.message.text.split()[1:] if update.message and update.message.text else []
 
         # 🧹 Delete the original /start message for clean chat
@@ -228,6 +231,8 @@ async def handle_file_upload(update: Update, context: CallbackContext):
 
         # ✅ Deep link with file ID
         deep_link = f"https://t.me/{bot.username}?start={sent.message_id}"
+
+        add_file(file_size)
 
         # ✅ Styled Response
         text = f"""
