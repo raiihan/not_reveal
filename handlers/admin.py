@@ -57,7 +57,7 @@ async def list_admins(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ✅ Bot Stats
 async def get_upload_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    if user_id not in ADMINS:
+    if user_id not in ADMIN_IDS:
         await update.message.reply_text("🚫 You are not authorized.")
         return
 
