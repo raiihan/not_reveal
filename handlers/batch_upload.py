@@ -57,7 +57,7 @@ def get_batch_upload_handler():
         states={
             WAITING_FOR_FILES: [
                 MessageHandler(
-                    filters.Document | filters.Video | filters.Audio,  # Correct filter usage
+                    filters.Document | filters.Video | filters.Audio,  # Correct filter usage for all file types
                     handle_file_upload
                 ),
                 CommandHandler('done', complete_batch_upload),
