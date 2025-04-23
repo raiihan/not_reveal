@@ -22,6 +22,8 @@ from handlers.admin import help_command, generate_link,  edit_file_description, 
 from utils.stats import add_user, add_file
 from handlers.batch_upload import  get_batch_upload_handler
 
+from handlers.brodcast import broadcast
+
 logging.basicConfig(
     level=logging.ERROR,
     format="%(asctime)s - %(levelname)s - %(message)s"
@@ -266,6 +268,17 @@ telegram_app.add_handler(CommandHandler("stats", get_upload_stats))
 telegram_app.add_handler(CommandHandler("user", show_user_details))
 telegram_app.add_handler(CommandHandler("broadcast", broadcast_message))
 telegram_app.add_handler(get_batch_upload_handler())
+
+
+
+
+telegram_app.add_handler(ConversationHandler(
+    entry_points=[CommandHandler("broadcast", broadcast.start_broadcast)],
+    states={
+        broadcast.ASK_MESSAGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, broadcast.do_broadcast)],
+    },
+    fallbacks=[CommandHandler("cancel", broadcast.cancel_broadcast)],
+))
 
 
 # 🥈 Second: File upload handler
