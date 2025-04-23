@@ -25,6 +25,7 @@ async def set_bot_commands(application):
         BotCommand("genlink", "Generate deep link"),
         BotCommand("batch", "Batch upload files"),
         BotCommand("delete", "Delete file"),
+        BotCommand("adminlist", "Admin List"),
         BotCommand("broadcast", "Send message to all users"),
         BotCommand("user", "Show user details"),
         BotCommand("stats", "Show bot stats"),
