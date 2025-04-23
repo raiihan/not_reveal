@@ -1,4 +1,4 @@
-from telegram import BotCommand, BotCommandScopeDefault, BotCommandScopeAllPrivateChats
+from telegram import BotCommand, BotCommandScopeDefault, BotCommandScopeAllPrivateChats, BotCommandScopeChat
 
 async def set_bot_commands(application):
     # Commands for all users
@@ -19,4 +19,5 @@ async def set_bot_commands(application):
         BotCommand("user", "👤 User info"),
         BotCommand("broadcast", "📣 Broadcast"),
     ]
-    await application.bot.set_my_commands(admin_commands, scope=BotCommandScopeAllPrivateChats())
+  for admin_id in ADMINS:
+        await application.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=admin_id))
