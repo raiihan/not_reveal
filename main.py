@@ -22,7 +22,7 @@ from handlers.admin import help_command, generate_link,  edit_file_description, 
 from utils.stats import add_user, add_file
 from handlers.batch_upload import  get_batch_upload_handler
 
-from handlers.brodcast import broadcast
+from handlers import broadcast
 
 logging.basicConfig(
     level=logging.ERROR,
