@@ -1,5 +1,5 @@
 
-OWNER_ID = 1615680044
+OWNER_ID = int(os.getenv("OWNER_ID"))
 
 ADMINS = [
     OWNER_ID,
@@ -8,4 +8,4 @@ ADMINS = [
 ]
 
 def is_admin(user_id: int) -> bool:
-    return user_id in ADMIN_IDS
+    return user_id in ADMINS
