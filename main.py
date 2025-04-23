@@ -85,7 +85,7 @@ async def start(update: Update, context: CallbackContext):
         except (IndexError, ValueError):
             await context.bot.send_message(
                 chat_id=user_id,
-                text="⚠️ Invalid or broken link. Please ask the admin for a valid one.",
+                text="⚠️ Please click the download button from our channel. And join our unversal channel @shadowStreamer.",
             )
             return
 
