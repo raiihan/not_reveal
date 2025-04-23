@@ -140,7 +140,7 @@ async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file
         # Send file info
         await context.bot.send_message(
             chat_id=user_id,
-            text=f"📥 <b>{file_name}</b>\n📁 <i>{file_type} - {file_size}</i>",
+            text=f"📥 <b>{file_name}</b>\n📁 <i>{file_type} - {file_size}</i></b>\n our new file",
             reply_to_message_id=sent.message_id,
             parse_mode=ParseMode.HTML
         )
