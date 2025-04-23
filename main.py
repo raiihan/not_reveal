@@ -17,7 +17,8 @@ from keyboard_utils import get_user_keyboard, get_admin_keyboard, set_bot_comman
 from telegram import ReplyKeyboardMarkup
 from telegram import Update
 from telegram.constants import ParseMode
-
+from handlers.menu import show_menu
+from handlers.admin_menu_actions import handle_admin_action
 
 logging.basicConfig(
     level=logging.ERROR,
@@ -318,6 +319,12 @@ telegram_app.add_handler(CommandHandler("stats", bot_stats))
 telegram_app.add_handler(CommandHandler("broadcast", broadcast_message))
 telegram_app.add_handler(CommandHandler("userinfo", user_info))
 telegram_app.add_handler(CommandHandler("adminlist", admin_list))
+
+
+
+telegram_app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^(🚀 Start|↩️ Back)$'), show_menu))
+telegram_app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^(🔗 Generate Link|📦 Batch Upload|👥 Admin List|🗑️ Delete File|📢 Broadcast|🧾 User Details|📊 Bot Stats)$'), handle_admin_action))
+
 
 # 🥈 Second: File upload handler
 telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | filters.VIDEO, handle_file_upload))
