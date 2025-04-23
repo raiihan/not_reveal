@@ -21,5 +21,5 @@ async def set_bot_commands(application):
         BotCommand("user", "👤 User info"),
         BotCommand("broadcast", "📣 Broadcast"),
     ]
-  for admin_id in ADMINS:
+    for admin_id in ADMINS:
         await application.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=admin_id))
