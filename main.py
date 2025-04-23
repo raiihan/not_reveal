@@ -13,7 +13,7 @@ from telegram.ext import (
 import logging
 import os
 import math
-from keyboard_utils import set_bot_commands
+from keyboard_utils import set_bot_commands, get_main_inline_menu
 from telegram import Update
 from telegram.constants import ParseMode
 from handlers.admin import ( help_command,
