@@ -1,16 +1,22 @@
-from telegram import BotCommand
+from telegram import BotCommand, BotCommandScopeDefault, BotCommandScopeAllPrivateChats
 
 async def set_bot_commands(application):
-    commands = [
-        BotCommand("start", "📁 Start the bot"),
-        BotCommand("genlink", "🔗 Generate a deep link"),
-        BotCommand("editfile", "📝 Edit file description"),
-        BotCommand("batchupload", "📦 Upload multiple files"),
-        BotCommand("delete", "🗑️ Delete a file"),
-        BotCommand("adminlist", "👥 List of bot admins"),
-        BotCommand("stats", "📊 View bot stats"),
-        BotCommand("user", "👤 View user info"),
-        BotCommand("broadcast", "📣 Broadcast a message"),
+    # Commands for all users
+    user_commands = [
+        BotCommand("start", "📁 Start"),
+        BotCommand("help", "ℹ️ Get help"),
     ]
-    await application.bot.set_my_commands(commands)
+    await application.bot.set_my_commands(user_commands, scope=BotCommandScopeDefault())
 
+    # Commands for admin users
+    admin_commands = [
+        BotCommand("genlink", "🔗 Generate link"),
+        BotCommand("editfile", "📝 Edit file"),
+        BotCommand("batchupload", "📦 Upload multiple files"),
+        BotCommand("delete", "🗑️ Delete file"),
+        BotCommand("adminlist", "👥 Admin list"),
+        BotCommand("stats", "📊 Bot stats"),
+        BotCommand("user", "👤 User info"),
+        BotCommand("broadcast", "📣 Broadcast"),
+    ]
+    await application.bot.set_my_commands(admin_commands, scope=BotCommandScopeAllPrivateChats())
