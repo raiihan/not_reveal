@@ -324,6 +324,7 @@ telegram_app.add_handler(CommandHandler("editfile", edit_file_description))
 telegram_app.add_handler(CommandHandler("stats", get_upload_stats))
 telegram_app.add_handler(CommandHandler("batch", batch_upload_files))
 
+
 telegram_app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^(🚀 Start|↩️ Back)$'), show_menu))
 telegram_app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^(🔗 Generate Link|📦 Batch Upload|👥 Admin List|🗑️ Delete File|📢 Broadcast|🧾 User Details|📊 Bot Stats)$'), handle_admin_action))
 
