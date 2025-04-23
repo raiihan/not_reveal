@@ -22,18 +22,20 @@ def get_admin_keyboard():
 
 
 
+
+
 async def set_bot_commands(application):
     commands = [
-        BotCommand("start", "Start bot"),
-        BotCommand("genlink", "Generate deep link"),
-        BotCommand("batch_upload", "Batch upload files"),
+        BotCommand("start", "Start the bot"),
+        
+        BotCommand("genlink", "Upload & get a deep link"),
+        BotCommand("batch_upload", "Upload multiple files"),
         BotCommand("delete", "Delete file"),
         BotCommand("adminlist", "Admin List"),
-        BotCommand("Edit File", "edit_file"),
+        BotCommand("stats", "View bot statistics"),
+        BotCommand("editfile", "Edit file description"),
         BotCommand("broadcast", "Send message to all users"),
         BotCommand("user", "Show user details"),
-        BotCommand("view_stats", "Show bot stats"),
-        BotCommand("help", "Show help"),
     ]
-
     await application.bot.set_my_commands(commands)
+
