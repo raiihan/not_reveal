@@ -7,7 +7,7 @@ ADMIN_IDS = [1615680044, 5621290261, 5765156518]  # You can add more admin user 
 
 # Commands available to everyone
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("ℹ️ Available commands:\n/start - Start bot\n/help - Help info")
+    await update.message.reply_text("ℹ️ For any query Please join our universal channel @shadowStreamer.")
 
 # Admin-only commands
 # ✅ generate_link
