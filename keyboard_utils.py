@@ -14,13 +14,6 @@ def get_main_inline_menu(bot_username):
         [InlineKeyboardButton("ℹ️ Help", url=f"https://t.me/{bot_username}?start=help")]
     ])
 
-await update.message.reply_text(
-    "Choose an option:",
-    reply_markup=get_main_inline_menu(context.bot.username)
-)
-
-
-
 
 async def set_bot_commands(application):
     # Commands for all users
