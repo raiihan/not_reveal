@@ -85,7 +85,7 @@ async def start(update: Update, context: CallbackContext):
         except (IndexError, ValueError):
             await context.bot.send_message(
                 chat_id=user_id,
-                text="⚠️ Please click the download button from our channel. And join our unversal channel @shadowStreamer.",
+                text="⚠️ Please click the download button from our channeln .\n And join our universal channel @shadowStreamer.",
             )
             return
 
@@ -102,7 +102,7 @@ async def start(update: Update, context: CallbackContext):
         logger.error(f"❌ Error in /start handler: {e}")
         await context.bot.send_message(
             chat_id=user_id,
-            text="❌ File not found or removed. The link may be broken. Please check again!",
+            text="❌ File not found or removed.\n Please join our universal channel @shadowStreamer",
         )
 
 # for admilist
@@ -193,8 +193,8 @@ async def handle_file_upload(update: Update, context: CallbackContext):
         user_id = update.effective_user.id
         if not is_admin(user_id):
             await update.message.reply_text(
-                "🚫 Sorry, only bot admins can upload files.\n"
-                "✨ This feature is for secure content delivery only."
+                "🚫 Sorry, only admins can upload files.\n"
+                "✨ Please join our universal channel @shadowStreamer."
             )
             return
 
