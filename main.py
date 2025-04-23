@@ -15,30 +15,27 @@ import os
 import asyncio
 import math
 from keyboard_utils import set_bot_commands
-from telegram import ReplyKeyboardMarkup
 from telegram import Update
 from telegram.constants import ParseMode
 from handlers.admin import ( help_command,
         generate_link, 
         edit_file_description,  
-        batch_upload_files, 
-        delete_file, 
-        list_admins, 
-        get_upload_stats,  
-        show_user_details, 
-        broadcast_command, 
-        handle_broadcast_message,     
-        cancel_broadcast
+        batch_upload_files,
+        list_admins
 )
-from utils.stats import add_user, add_file
-from handlers.batch_upload import  get_batch_upload_handler
 
-from handlers import broadcast
+
 
 logging.basicConfig(
     level=logging.ERROR,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
+# Replace this with your bot token
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+OWNER_ID = int(os.getenv("OWNER_ID"))
+CHANNEL_ID = os.getenv("CHANNEL_ID")
+ADMINS = from utils.admin_IDs import ADMIN_IDs
 
 
 app = FastAPI()
@@ -49,25 +46,10 @@ telegram_app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()  # Ini
 # Set up logging
 logger = logging.getLogger(__name__)
 
-# Replace this with your bot token
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-OWNER_ID = int(os.getenv("OWNER_ID"))
-CHANNEL_ID = os.getenv("CHANNEL_ID")
-ADMINS = [OWNER_ID, 5621290261, 5765156518]  # Replace with your actual admin Telegram IDs
 
-# Set up the Telegram application with your token
-telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-admin_msg = (
-    "👑 *Hello Admin!*\n\n"
-    "Welcome to the NotRevealBot control panel.\n\n"
-    "🔹 Use the menu to:\n"
-    "• 📤 Upload files\n"
-    "• 🔗 Generate deep links\n"
-    "• 📊 View stats\n"
-    "• 👥 Manage admins\n\n"
-    "Let’s manage files in style!"
-)
+
+
 
 user_msg = (
     "👋 *Welcome to the DownloadGhor!*\n\n"
@@ -85,7 +67,6 @@ def is_admin(user_id):
 async def start(update: Update, context: CallbackContext):
     try:
         user_id = update.effective_user.id
-        add_user(user_id)
         args = update.message.text.split()[1:] if update.message and update.message.text else []
 
         # 🧹 Delete the original /start message for clean chat
@@ -100,7 +81,7 @@ async def start(update: Update, context: CallbackContext):
         except (IndexError, ValueError):
             await context.bot.send_message(
                 chat_id=user_id,
-                text="⚠️ Please click the download button from our channeln .\n And join our universal channel @shadowStreamer.",
+                text="⚠️ Please click the download button from our channel.\n And join our universal channel @shadowStreamer.",
             )
             return
 
@@ -120,13 +101,6 @@ async def start(update: Update, context: CallbackContext):
             text="❌ File not found or removed.\n Please join our universal channel @shadowStreamer",
         )
 
-# for admilist
-async def list_admins(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if ADMINS:
-        admins = "\n".join(map(str, ADMINS))
-        await update.message.reply_text(f"👤 Current Admins:\n{admins}")
-    else:
-        await update.message.reply_text("⚠️ No admins found.")
 
 # file delivery and info or send file to user function refactore
 async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file_size, loading_msg):
@@ -147,7 +121,6 @@ async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file
             file_name = sent.video.file_name or "Unnamed Video"
             file_size = human_readable_size(sent.video.file_size)
             file_type = "Video",
-            caption=f"📥 <b>{file_name}</b>\n📁 <i>{file_type} - {file_size}</i>\n✨ Our new file!",
         elif sent.photo:
             file_name = "Photo.jpg"
             file_size = human_readable_size(sent.photo[-1].file_size)
@@ -162,8 +135,7 @@ async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file
         # Send file info
         await context.bot.send_message(
             chat_id=user_id,
-            text=f"📥 <b>{file_name}</b>\n📁 <i>{file_type} - {file_size}</i></b>\n our new file",
-            caption=f"📥 <b>{file_name}</b>\n📁 <i>{file_type} - {file_size}</i>\n✨ Our new file!",
+            text=f"📥 <b>{file_name}</b>\n📁 <i>{file_type} - {file_size}</i></b>\n",
             reply_to_message_id=sent.message_id,
             parse_mode=ParseMode.HTML
         )
@@ -184,7 +156,7 @@ async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file
         if 'sent' not in locals():
             await context.bot.send_message(
                 chat_id=user_id,
-                text="❌ <b>Sorry! I couldn't retrieve the file.</b>",
+                text="❌ <b>Sorry! I couldn't retrieve the file.\n Please join our universal channel @shadowStreamer</b>",
                 parse_mode=ParseMode.HTML
             )
 
@@ -244,7 +216,6 @@ async def handle_file_upload(update: Update, context: CallbackContext):
         # ✅ Deep link with file ID
         deep_link = f"https://t.me/{bot.username}?start={sent.message_id}"
 
-        add_file(file_size)
 
         # ✅ Styled Response
         text = f"""
@@ -272,25 +243,7 @@ telegram_app.add_handler(CommandHandler("help", help_command))
 telegram_app.add_handler(CommandHandler("genlink", generate_link))
 telegram_app.add_handler(CommandHandler("editfile", edit_file_description))
 telegram_app.add_handler(CommandHandler("batchupload", batch_upload_files))
-telegram_app.add_handler(CommandHandler("delete", delete_file))
 telegram_app.add_handler(CommandHandler("adminlist", list_admins))
-telegram_app.add_handler(CommandHandler("stats", get_upload_stats))
-telegram_app.add_handler(CommandHandler("user", show_user_details))
-telegram_app.add_handler(CommandHandler("broadcast", broadcast_message))
-telegram_app.add_handler(get_batch_upload_handler())
-
-
-
-
-telegram_app.add_handler(
-    ConversationHandler(
-        entry_points=[CommandHandler("broadcast", broadcast_command)],
-        states={
-            WAITING_FOR_BROADCAST: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_broadcast_message)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel_broadcast)]
-    )
-)
 
 
 # 🥈 Second: File upload handler
