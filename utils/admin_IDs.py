@@ -1,8 +1,7 @@
-# admins.py
 
 OWNER_ID = 1615680044
 
-ADMIN_IDs = [
+ADMINS = [
     OWNER_ID,
     5621290261, 
     5765156518
