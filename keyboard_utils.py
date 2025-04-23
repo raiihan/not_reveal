@@ -1,6 +1,6 @@
 from telegram import BotCommand, BotCommandScopeDefault, BotCommandScopeAllPrivateChats, BotCommandScopeChat
 
-ADMINS = [1615680044, 5621290261, 5765156518]  # You can add more admin user IDs
+ADMINS = [1615680044, 5621290261, 5765156518] 
 
 async def set_bot_commands(application):
     # Commands for all users
