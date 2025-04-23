@@ -1,37 +1,60 @@
 from telegram import Update
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import (
+    ContextTypes,
+    ConversationHandler,
+    CommandHandler,
+    MessageHandler,
+    filters
+)
 
-WAITING_FILES = range(1)
+# Define state
+WAITING_FOR_FILES = 1
 
-# Start batch upload process
+# Start the batch upload
 async def start_batch_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data["batch_links"] = []
-    await update.message.reply_text("📤 Send multiple files one by one. Type /done when finished.")
-    return WAITING_FILES
+    context.user_data['batch_files'] = []
+    await update.message.reply_text(
+        "📤 Send the files one by one. When you're done, send /done to finish the batch upload."
+    )
+    return WAITING_FOR_FILES
 
-# Handle each uploaded file
-async def handle_uploaded_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Handle individual file uploads
+async def handle_file_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file = update.message.document or update.message.video or update.message.audio
-    if not file:
-        await update.message.reply_text("❗ Only document/video/audio files are supported.")
-        return
-
-    # Forward to private channel
-    channel_id = -1002282914539  # Store Room channel
-    sent = await context.bot.forward_message(chat_id=channel_id, from_chat_id=update.message.chat_id, message_id=update.message.message_id)
-
-    # Generate deep link from message_id
-    msg_id = sent.message_id
-    deep_link = f"https://t.me/NotRevealBot?start={msg_id}"
-    context.user_data["batch_links"].append(deep_link)
-
-    await update.message.reply_text(f"✅ Uploaded. Link: {deep_link}")
-
-# Finish batch
-async def done_batch_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    links = context.user_data.get("batch_links", [])
-    if not links:
-        await update.message.reply_text("⚠️ No files uploaded.")
+    if file:
+        context.user_data['batch_files'].append(file.file_id)
+        await update.message.reply_text(f"✅ Received: {file.file_name or file.mime_type}")
     else:
+        await update.message.reply_text("❗ That doesn't seem to be a valid file. Please send a document/video/audio.")
+    return WAITING_FOR_FILES
+
+# Complete the batch upload
+async def complete_batch_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    files = context.user_data.get('batch_files', [])
+    if not files:
+        await update.message.reply_text("⚠️ No files received.")
+    else:
+        links = []
+        for idx, file_id in enumerate(files, start=1):
+            links.append(f"{idx}. 🔗 https://t.me/{context.bot.username}?start={file_id}")
         await update.message.reply_text("✅ Batch upload complete:\n" + "\n".join(links))
+    context.user_data.clear()
     return ConversationHandler.END
+
+# Cancel handler (optional)
+async def cancel_batch_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("❌ Batch upload canceled.")
+    return ConversationHandler.END
+
+# Add this in your main.py or bot.py to register the handler
+def get_batch_upload_handler():
+    return ConversationHandler(
+        entry_points=[CommandHandler('batchupload', start_batch_upload)],
+        states={
+            WAITING_FOR_FILES: [
+                MessageHandler(filters.Document.ALL | filters.Video.ALL | filters.Audio.ALL, handle_file_upload),
+                CommandHandler('done', complete_batch_upload)
+            ]
+        },
+        fallbacks=[CommandHandler('cancel', cancel_batch_upload)],
+    )
