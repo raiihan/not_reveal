@@ -131,7 +131,8 @@ async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file
         elif sent.video:
             file_name = sent.video.file_name or "Unnamed Video"
             file_size = human_readable_size(sent.video.file_size)
-            file_type = "Video"
+            file_type = "Video",
+            caption=f"📥 <b>{file_name}</b>\n📁 <i>{file_type} - {file_size}</i>\n✨ Our new file!",
         elif sent.photo:
             file_name = "Photo.jpg"
             file_size = human_readable_size(sent.photo[-1].file_size)
