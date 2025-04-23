@@ -18,7 +18,18 @@ from keyboard_utils import set_bot_commands
 from telegram import ReplyKeyboardMarkup
 from telegram import Update
 from telegram.constants import ParseMode
-from handlers.admin import help_command, generate_link,  edit_file_description,  batch_upload_files, delete_file, list_admins, get_upload_stats, show_user_details, broadcast_message
+from handlers.admin import ( help_command,
+        generate_link, 
+        edit_file_description,  
+        batch_upload_files, 
+        delete_file, 
+        list_admins, 
+        get_upload_stats,  
+        show_user_details, 
+        broadcast_command, 
+        handle_broadcast_message,     
+        cancel_broadcast
+)
 from utils.stats import add_user, add_file
 from handlers.batch_upload import  get_batch_upload_handler
 
@@ -60,9 +71,9 @@ admin_msg = (
 
 user_msg = (
     "👋 *Welcome to the DownloadGhor!*\n\n"
-    "To get a file, just click on a secure button shared by admins like:\n"
-    "`Enjoy your meal"
-    "Safe download! 🚀"
+    "To get a file, just click on a secure button shared by admins\n"
+    "`Enjoy your meal\n"
+    "Safe download! 🚀\n"
     "Please join our universal channel @shadowStreamer."
 )
 
@@ -75,7 +86,6 @@ async def start(update: Update, context: CallbackContext):
     try:
         user_id = update.effective_user.id
         add_user(user_id)
-        await update.message.reply_text(user_msg)
         args = update.message.text.split()[1:] if update.message and update.message.text else []
 
         # 🧹 Delete the original /start message for clean chat
@@ -272,13 +282,15 @@ telegram_app.add_handler(get_batch_upload_handler())
 
 
 
-telegram_app.add_handler(ConversationHandler(
-    entry_points=[CommandHandler("broadcast", broadcast.start_broadcast)],
-    states={
-        broadcast.ASK_MESSAGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, broadcast.do_broadcast)],
-    },
-    fallbacks=[CommandHandler("cancel", broadcast.cancel_broadcast)],
-))
+telegram_app.add_handler(
+    ConversationHandler(
+        entry_points=[CommandHandler("broadcast", broadcast_command)],
+        states={
+            WAITING_FOR_BROADCAST: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_broadcast_message)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel_broadcast)]
+    )
+)
 
 
 # 🥈 Second: File upload handler
