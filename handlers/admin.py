@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-ADMIN_IDS = from utils.admin_IDs import ADMIN_IDs
+from utils.admin_IDs import ADMINS
 
 # Commands available to everyone
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -10,7 +10,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Admin-only commands
 # ✅ generate_link
 async def generate_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id not in ADMIN_IDS:
+    if update.effective_user.id not in ADMINS:
         await update.message.reply_text("⛔ You are not authorized to use this command.")
         return
     await update.message.reply_text("🔗 Generating a deep link...")
@@ -44,8 +44,8 @@ async def delete_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ✅ Admin List
 async def list_admins(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if ADMIN_IDS:
-        admins = "\n".join(map(str, ADMIN_IDS))
+    if ADMINS:
+        admins = "\n".join(map(str, ADMINS))
         await update.message.reply_text(f"👤 Current Admins:\n{admins}")
     else:
         await update.message.reply_text("⚠️ No admins found.")
