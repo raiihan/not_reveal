@@ -6,7 +6,8 @@ from telegram.ext import (
     MessageHandler,
     filters,
     CommandHandler,
-    ContextTypes
+    ContextTypes,
+    ConversationHandler
 )
 
 import logging
@@ -18,6 +19,8 @@ from telegram import ReplyKeyboardMarkup
 from telegram import Update
 from telegram.constants import ParseMode
 from handlers.admin import help_command, generate_link,  edit_file_description,  batch_upload_files, delete_file, list_admins, get_upload_stats, show_user_details, broadcast_message
+
+from handlers.batch_upload import start_batch_upload, handle_uploaded_file, done_batch_upload
 
 logging.basicConfig(
     level=logging.ERROR,
@@ -83,7 +86,6 @@ async def start(update: Update, context: CallbackContext):
             await context.bot.send_message(
                 chat_id=user_id,
                 text="⚠️ Invalid or broken link. Please ask the admin for a valid one.",
-                reply_markup=get_admin_keyboard() if is_admin(user_id) else get_user_keyboard()  # Optional: Show keyboard here too
             )
             return
 
@@ -101,7 +103,6 @@ async def start(update: Update, context: CallbackContext):
         await context.bot.send_message(
             chat_id=user_id,
             text="❌ File not found or removed. The link may be broken. Please check again!",
-            reply_markup=get_admin_keyboard() if is_admin(user_id) else get_user_keyboard()
         )
 
 
