@@ -12,7 +12,6 @@ from telegram.ext import (
 
 import logging
 import os
-import asyncio
 import math
 from keyboard_utils import set_bot_commands
 from telegram import Update
@@ -23,7 +22,7 @@ from handlers.admin import ( help_command,
         batch_upload_files,
         list_admins
 )
-
+from utils.admin_IDs import ADMINS
 
 
 logging.basicConfig(
@@ -35,7 +34,7 @@ logging.basicConfig(
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OWNER_ID = int(os.getenv("OWNER_ID"))
 CHANNEL_ID = os.getenv("CHANNEL_ID")
-ADMINS = from utils.admin_IDs import ADMIN_IDs
+
 
 
 app = FastAPI()
