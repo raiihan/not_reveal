@@ -13,13 +13,11 @@ import logging
 import os
 import asyncio
 import math
-from keyboard_utils import get_user_keyboard, get_admin_keyboard, set_bot_commands
+from keyboard_utils import set_bot_commands
 from telegram import ReplyKeyboardMarkup
 from telegram import Update
 from telegram.constants import ParseMode
-from handlers.menu import show_menu
-from handlers.admin_menu_actions import handle_admin_action
-from handlers.admin import edit_file_description, get_upload_stats, batch_upload_files
+from handlers.admin import edit_file_description, get_upload_stats, batch_upload_files,list_admins
 
 logging.basicConfig(
     level=logging.ERROR,
@@ -63,20 +61,8 @@ user_msg = (
 )
 
 
-
-
-ADMINS = [OWNER_ID, 123456789, 987654321]  # Replace with your actual admin Telegram IDs
-
 def is_admin(user_id):
     return user_id in ADMINS
-
-async def admin_list(update: Update, context: CallbackContext):
-    user_id = update.effective_user.id
-    if not is_admin(user_id):
-        return
-    admin_list_text = "\n".join([f"👤 `{admin}`" for admin in ADMINS])
-    await update.message.reply_text(f"🔐 Current Admins:\n{admin_list_text}", parse_mode="Markdown")
-
 
 
 async def start(update: Update, context: CallbackContext):
@@ -89,19 +75,6 @@ async def start(update: Update, context: CallbackContext):
             await update.message.delete()
         except Exception as e:
             logger.warning(f"Failed to delete start command: {e}")
-
-        # 💬 Send custom keyboard and welcome message
-        if not args:
-            keyboard = get_admin_keyboard() if is_admin(user_id) else get_user_keyboard()
-            welcome_msg = admin_msg if is_admin(user_id) else user_msg
-
-            # ✅ THIS ensures the custom keyboard shows in bottom-left
-            await context.bot.send_message(
-                chat_id=user_id,
-                text=welcome_msg,
-                reply_markup=keyboard
-            )
-            return
 
         # 🧩 Handle deep link argument
         try:
@@ -204,51 +177,7 @@ def human_readable_size(size_bytes):
     return f"{round(size_bytes / p, 2)} {size_name[i]}"
 
 
-# menu list is here
 
-async def generate_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🛠 Generate Link feature is under construction.")
-
-async def batch_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🛠 Batch Upload feature is under construction.")
-
-async def delete_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🗑️ Send the file link or ID to delete.")
-
-async def bot_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("📊 Bot Stats feature coming soon.")
-
-async def broadcast_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("📢 Broadcast feature coming soon.")
-
-async def user_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🙍 User Info will be available soon.")
- 
-
-# menu handler
-
-async def handle_menu_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text
-    if text == "📤 Generate Link":
-        await generate_link(update, context)
-    elif text == "📂 Batch Upload":
-        await batch_upload(update, context)
-    elif text == "🗑️ Delete File":
-        await delete_file(update, context)
-    elif text == "📊 Bot Stats":
-        await bot_stats(update, context)
-    elif text == "📢 Broadcast":
-        await broadcast_message(update, context)
-    elif text == "🙍 User Info":
-        await user_info(update, context)
-
-
-
-
-# Function to handle file uploads
-# Define the handler to process file 
-    
-    # Function to handle file uploads with admin check
 # Function to handle file uploads with admin check
 async def handle_file_upload(update: Update, context: CallbackContext):
     try:
@@ -313,27 +242,21 @@ async def handle_file_upload(update: Update, context: CallbackContext):
 # Add the file upload handler to the application
 # 🥇 First: Command handlers
 telegram_app.add_handler(CommandHandler("start", start))
-telegram_app.add_handler(CommandHandler("generatelink", generate_link))
-telegram_app.add_handler(CommandHandler("batchupload", batch_upload))
-telegram_app.add_handler(CommandHandler("deletefile", delete_file))
-telegram_app.add_handler(CommandHandler("stats", bot_stats))
-telegram_app.add_handler(CommandHandler("broadcast", broadcast_message))
-telegram_app.add_handler(CommandHandler("userinfo", user_info))
-telegram_app.add_handler(CommandHandler("adminlist", admin_list))
+telegram_app.add_handler(CommandHandler("help", help_command))
+telegram_app.add_handler(CommandHandler("genlink", generate_link))
 telegram_app.add_handler(CommandHandler("editfile", edit_file_description))
+telegram_app.add_handler(CommandHandler("batchupload", batch_upload_files))
+telegram_app.add_handler(CommandHandler("delete", delete_file))
+telegram_app.add_handler(CommandHandler("adminlist", list_admins))
 telegram_app.add_handler(CommandHandler("stats", get_upload_stats))
-telegram_app.add_handler(CommandHandler("batch", batch_upload_files))
-
-
-telegram_app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^(🚀 Start|↩️ Back)$'), show_menu))
-telegram_app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^(🔗 Generate Link|📦 Batch Upload|👥 Admin List|🗑️ Delete File|📢 Broadcast|🧾 User Details|📊 Bot Stats)$'), handle_admin_action))
+telegram_app.add_handler(CommandHandler("user", show_user_details))
+telegram_app.add_handler(CommandHandler("broadcast", broadcast_message))
 
 
 # 🥈 Second: File upload handler
 telegram_app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO | filters.VIDEO, handle_file_upload))
 
-# 🥉 Last: Menu text button handler
-telegram_app.add_handler(MessageHandler(filters.TEXT, handle_menu_click))
+
 
 
 
