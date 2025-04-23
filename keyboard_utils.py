@@ -12,6 +12,9 @@ def get_admin_keyboard():
         [KeyboardButton("🔗 Generate Link"), KeyboardButton("📦 Batch Upload")],
         [KeyboardButton("👥 Admin List"), KeyboardButton("🗑️ Delete File")],
         [KeyboardButton("📊 Bot Stats"), KeyboardButton("📣 Broadcast")],
+        [InlineKeyboardButton("📝 Edit File Description", callback_data='edit_file')],
+        [InlineKeyboardButton("📊 Bot Stats", callback_data='view_stats')],
+        [InlineKeyboardButton("📁 Batch Upload", callback_data='batch_upload')]
         [KeyboardButton("👤 User Details")],
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
@@ -23,12 +26,13 @@ async def set_bot_commands(application):
     commands = [
         BotCommand("start", "Start bot"),
         BotCommand("genlink", "Generate deep link"),
-        BotCommand("batch", "Batch upload files"),
+        BotCommand("batch_upload", "Batch upload files"),
         BotCommand("delete", "Delete file"),
         BotCommand("adminlist", "Admin List"),
+        BotCommand("Edit File", "edit_file"),
         BotCommand("broadcast", "Send message to all users"),
         BotCommand("user", "Show user details"),
-        BotCommand("stats", "Show bot stats"),
+        BotCommand("view_stats", "Show bot stats"),
         BotCommand("help", "Show help"),
     ]
 
