@@ -1,9 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-
-ADMINS = set(ADMIN_IDS)
-
 ADMIN_IDS = from utils.admin_IDs import ADMIN_IDs
 
 # Commands available to everyone
@@ -47,11 +44,12 @@ async def delete_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ✅ Admin List
 async def list_admins(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if ADMINS:
-        admins = "\n".join(map(str, ADMINS))
+    if ADMIN_IDS:
+        admins = "\n".join(map(str, ADMIN_IDS))
         await update.message.reply_text(f"👤 Current Admins:\n{admins}")
     else:
         await update.message.reply_text("⚠️ No admins found.")
+
 
 # ✅ Bot Stats
 async def get_upload_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -63,19 +61,6 @@ async def show_user_details(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ✅ Broadcast
 async def broadcast_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📣 Broadcasting your message...")
-
-
-
-
-
-
-
-
-def human_readable_size(size, decimal_places=2):
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-        if size < 1024.0:
-            return f"{size:.{decimal_places}f} {unit}"
-        size /= 1024.0
 
 
 
