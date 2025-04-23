@@ -1,7 +1,7 @@
 from telegram import BotCommand, BotCommandScopeDefault, BotCommandScopeChat
 from telegram.error import BadRequest
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-ADMINS = from utils.admin_IDs import ADMINS
+from utils.admin_IDs import ADMINS
 
 
 
