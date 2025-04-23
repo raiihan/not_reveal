@@ -19,6 +19,7 @@ from telegram import Update
 from telegram.constants import ParseMode
 from handlers.menu import show_menu
 from handlers.admin_menu_actions import handle_admin_action
+from handlers.admin import edit_file_description, get_upload_stats, batch_upload_files
 
 logging.basicConfig(
     level=logging.ERROR,
@@ -319,8 +320,9 @@ telegram_app.add_handler(CommandHandler("stats", bot_stats))
 telegram_app.add_handler(CommandHandler("broadcast", broadcast_message))
 telegram_app.add_handler(CommandHandler("userinfo", user_info))
 telegram_app.add_handler(CommandHandler("adminlist", admin_list))
-
-
+telegram_app.add_handler(CommandHandler("editfile", edit_file_description))
+telegram_app.add_handler(CommandHandler("stats", get_upload_stats))
+telegram_app.add_handler(MessageHandler(Filters.document, batch_upload_files))
 
 telegram_app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^(🚀 Start|↩️ Back)$'), show_menu))
 telegram_app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^(🔗 Generate Link|📦 Batch Upload|👥 Admin List|🗑️ Delete File|📢 Broadcast|🧾 User Details|📊 Bot Stats)$'), handle_admin_action))
