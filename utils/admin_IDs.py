@@ -1,4 +1,4 @@
-
+import os
 OWNER_ID = int(os.getenv("OWNER_ID"))
 
 ADMINS = [
