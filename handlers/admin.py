@@ -1,5 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
+from telegram.constants import ParseMode
+from utils.stats import get_stats
 
 ADMINS = set()
 
@@ -54,15 +56,22 @@ async def list_admins(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ✅ Bot Stats
 async def get_upload_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    stats = {
-        'total_uploads': 100,
-        'most_uploaded_type': 'PDF',
-        'most_downloaded_file': 'example.pdf'
-    }
+    user_id = update.effective_user.id
+    if user_id not in ADMINS:
+        await update.message.reply_text("🚫 You are not authorized.")
+        return
+
+    stats = get_stats()
+    total_users = len(stats["users"])
+    total_files = stats["files"]
+    total_storage = stats["storage"]
+
     await update.message.reply_text(
-        f"📊 Total Uploads: {stats['total_uploads']}\n"
-        f"📄 Top Type: {stats['most_uploaded_type']}\n"
-        f"🔥 Top File: {stats['most_downloaded_file']}"
+        f"📊 <b>Bot Stats</b>\n\n"
+        f"👥 Users: <code>{total_users}</code>\n"
+        f"📁 Files: <code>{total_files}</code>\n"
+        f"💾 Storage Used: <code>{human_readable_size(total_storage)}</code>",
+        parse_mode=ParseMode.HTML
     )
 
 # ✅ User Details
