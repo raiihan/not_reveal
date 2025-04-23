@@ -105,7 +105,13 @@ async def start(update: Update, context: CallbackContext):
             text="❌ File not found or removed. The link may be broken. Please check again!",
         )
 
-
+# for admilist
+async def list_admins(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if ADMINS:
+        admins = "\n".join(map(str, ADMINS))
+        await update.message.reply_text(f"👤 Current Admins:\n{admins}")
+    else:
+        await update.message.reply_text("⚠️ No admins found.")
 
 # file delivery and info or send file to user function refactore
 async def send_file_to_user(context, user_id, msg_id, file_name, file_type, file_size, loading_msg):
