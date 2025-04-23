@@ -1,14 +1,10 @@
-from telegram import Update, ReplyKeyboardRemove
-from telegram.ext import ContextTypes, ConversationHandler
-from telegram.constants import ParseMode
-from utils.stats import get_stats
-from utils.admin_IDs import is_admin
-from database.db import get_user_count, get_upload_count, get_total_storage_used  # You can create these if needed
+from telegram import Update
+from telegram.ext import ContextTypes
 
 
-ADMINS = set()
+ADMINS = set(ADMIN_IDS)
 
-ADMIN_IDS = [1615680044, 5621290261, 5765156518]  # You can add more admin user IDs
+ADMIN_IDS = from utils.admin_IDs import ADMIN_IDs
 
 # Commands available to everyone
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -59,23 +55,7 @@ async def list_admins(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ✅ Bot Stats
 async def get_upload_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
- user_id = update.effective_user.id
-    if not is_admin(user_id):
-        await update.message.reply_text("🚫 You are not authorized to view stats.")
-        return
-
-    user_count = await get_user_count()
-    upload_count = await get_upload_count()
-    storage_used = await get_total_storage_used()
-
-    text = (
-        "📊 <b>Bot Statistics</b>\n\n"
-        f"👥 <b>Users:</b> {user_count}\n"
-        f"📁 <b>Files Uploaded:</b> {upload_count}\n"
-        f"💾 <b>Total Storage Used:</b> {storage_used}"
-    )
-
-    await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+   await update.message.reply_text("📣 Bot Stats ...")
 
 # ✅ User Details
 async def show_user_details(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -87,46 +67,7 @@ async def broadcast_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-WAITING_FOR_BROADCAST = 1
 
-async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if not is_admin(user_id):
-        await update.message.reply_text("🚫 You are not authorized to broadcast.")
-        return ConversationHandler.END
-
-    await update.message.reply_text(
-        "📣 Please send the message you want to broadcast to all users.",
-        reply_markup=ReplyKeyboardRemove()
-    )
-    return WAITING_FOR_BROADCAST
-
-async def handle_broadcast_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    from database.db import get_all_user_ids  # implement this if you haven't
-    message = update.message
-    user_ids = await get_all_user_ids()
-    success = 0
-    fail = 0
-
-    for user_id in user_ids:
-        try:
-            await context.bot.copy_message(
-                chat_id=user_id,
-                from_chat_id=message.chat_id,
-                message_id=message.message_id
-            )
-            success += 1
-        except:
-            fail += 1
-
-    await update.message.reply_text(
-        f"✅ Broadcast completed.\n\n📤 Sent: {success}\n❌ Failed: {fail}"
-    )
-    return ConversationHandler.END
-
-async def cancel_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("❌ Broadcast canceled.")
-    return ConversationHandler.END
 
 
 
