@@ -22,7 +22,7 @@ async def edit_file_description(update: Update, context: ContextTypes.DEFAULT_TY
     # TODO: Update description in database or in-memory storage
     await update.message.reply_text(f"✅ Description for file `{file_id}` updated.")
 
-# ✅ Upload Stats
+
 async def get_upload_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     stats = {
         'total_uploads': 100,
@@ -30,11 +30,11 @@ async def get_upload_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'most_downloaded_file': 'example.pdf'
     }
     await update.message.reply_text(
-        f"📊 Upload Stats:\n"
-        f"• Total Uploads: {stats['total_uploads']}\n"
-        f"• Most Uploaded Type: {stats['most_uploaded_type']}\n"
-        f"• Most Downloaded File: {stats['most_downloaded_file']}"
+        f"📊 Total Uploads: {stats['total_uploads']}\n"
+        f"📄 Top Type: {stats['most_uploaded_type']}\n"
+        f"🔥 Top File: {stats['most_downloaded_file']}"
     )
+
 
 # ✅ Batch Upload
 async def batch_upload_files(update: Update, context: ContextTypes.DEFAULT_TYPE):
