@@ -13,7 +13,7 @@ from telegram.ext import (
 import logging
 import os
 import math
-from keyboard_utils import set_bot_commands, get_main_inline_menu
+from keyboard_utils import set_bot_commands
 from telegram import Update
 from telegram.constants import ParseMode
 from handlers.admin import ( help_command,
@@ -67,10 +67,7 @@ async def start(update: Update, context: CallbackContext):
     try:
         user_id = update.effective_user.id
         args = update.message.text.split()[1:] if update.message and update.message.text else []
-        await update.message.reply_text(
-        "Choose an option:",
-        reply_markup=get_main_inline_menu(context.bot.username)
-)
+     
         # 🧹 Delete the original /start message for clean chat
         try:
             await update.message.delete()
