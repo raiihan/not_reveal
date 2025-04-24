@@ -3,18 +3,6 @@ from telegram.error import BadRequest
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from utils.admin_IDs import ADMINS
 
-
-
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
-def get_main_inline_menu(bot_username):
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton("📁 Start", url=f"https://t.me/{bot_username}?start=start")],
-        [InlineKeyboardButton("ℹ️ Help", url=f"https://t.me/{bot_username}?start=help")]
-    ])
-
-
 async def set_bot_commands(application):
     # Commands for all users
     user_commands = [
